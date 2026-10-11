@@ -93,7 +93,8 @@ spring.jpa.hibernate.ddl-auto=update
 Run the Application
 Bash
 # Clone the repository
-
+git clone https://github.com/mishra46shivam-git/clinic-scheduling-api.git
+cd clinic-scheduling-api
 
 # Run tests
 ./mvnw clean test
