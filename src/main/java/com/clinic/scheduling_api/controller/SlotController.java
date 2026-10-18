@@ -1,6 +1,7 @@
 package com.clinic.scheduling_api.controller;
 
 import com.clinic.scheduling_api.dto.CreateSlotRequest;
+import io.swagger.v3.oas.annotations.Parameter;
 import com.clinic.scheduling_api.dto.SlotResponse;
 import com.clinic.scheduling_api.entity.AppointmentSlot;
 import com.clinic.scheduling_api.entity.SlotStatus;
@@ -29,11 +30,15 @@ public class SlotController {
         AppointmentSlot createdSlot = appointmentService.createSlot(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(SlotResponse.fromEntity(createdSlot));
     }
-
     @GetMapping("/available")
     public ResponseEntity<List<SlotResponse>> getAvailableSlots(
+            @Parameter(description = "ID of the doctor", example = "1")
             @RequestParam Long doctorId,
+
+            @Parameter(description = "Start UTC date-time (ISO-8601)", example = "2026-10-25T00:00:00Z")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime start,
+
+            @Parameter(description = "End UTC date-time (ISO-8601)", example = "2026-10-25T23:59:59Z")
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) ZonedDateTime end
     ) {
         List<SlotResponse> slots = slotRepository
