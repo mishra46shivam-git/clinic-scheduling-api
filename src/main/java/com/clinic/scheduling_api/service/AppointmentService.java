@@ -1,9 +1,10 @@
 package com.clinic.scheduling_api.service;
+
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.util.UUID;
 
 import com.clinic.scheduling_api.dto.AppointmentResponse;
-import com.clinic.scheduling_api.dto.BookAppointmentRequest;
 import com.clinic.scheduling_api.dto.CreateSlotRequest;
 import com.clinic.scheduling_api.entity.*;
 import com.clinic.scheduling_api.exception.ResourceNotFoundException;
@@ -16,8 +17,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.UUID;
 
 @Slf4j
 @Service
@@ -62,16 +61,16 @@ public class AppointmentService {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public AppointmentResponse bookAppointment(BookAppointmentRequest request) {
-        AppointmentSlot slot = slotRepository.findById(request.slotId())
-                .orElseThrow(() -> new ResourceNotFoundException("Appointment slot not found with ID: " + request.slotId()));
+    public AppointmentResponse bookAppointment(Long slotId, Long patientId, String reasonForVisit) {
+        AppointmentSlot slot = slotRepository.findById(slotId)
+                .orElseThrow(() -> new ResourceNotFoundException("Appointment slot not found with ID: " + slotId));
 
         if (slot.getStatus() != SlotStatus.AVAILABLE) {
             throw new SlotUnavailableException("Slot is no longer available. Current status: " + slot.getStatus());
         }
 
-        Patient patient = patientRepository.findByIdWithUser(request.patientId())
-                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + request.patientId()));
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResourceNotFoundException("Patient not found with ID: " + patientId));
 
         slot.setStatus(SlotStatus.BOOKED);
         slotRepository.saveAndFlush(slot);
@@ -81,7 +80,7 @@ public class AppointmentService {
                 .patient(patient)
                 .status(AppointmentStatus.CONFIRMED)
                 .bookingReference(UUID.randomUUID().toString())
-                .reasonForVisit(request.reasonForVisit())
+                .reasonForVisit(reasonForVisit)
                 .build();
 
         Appointment savedAppointment = appointmentRepository.save(appointment);
